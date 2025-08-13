@@ -1,7 +1,10 @@
 name: CI
 on:
-  push:
   pull_request:
+    branches: [ develop ]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -11,6 +14,8 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '17'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
       - name: Build & Test
         run: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification
       - name: Upload reports

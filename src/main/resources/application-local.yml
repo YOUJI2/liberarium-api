@@ -1,7 +1,4 @@
 spring:
-  profiles:
-    active: local
-
   datasource:
     # local 환경에서는 DB를 미리 띄운상태에서 localhost로 접속
     url: jdbc:mysql://localhost:3306/bookdb?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -9,7 +6,7 @@ spring:
     password: app
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     defer-datasource-initialization: true
     show-sql: true
     properties:

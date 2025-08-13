@@ -9,7 +9,7 @@ spring:
     password: app
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     defer-datasource-initialization: true
     show-sql: true
     properties:
@@ -28,6 +28,7 @@ server:
       enabled: true
       pattern: "%h %l %u %t \"%r\" %s %b %D ms %{X-Request-Id}i"
       directory: logs
+  forward-headers-strategy: framework
 
 management:
   endpoints:
