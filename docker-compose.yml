@@ -46,7 +46,7 @@ services:
       - ./logs:/app-logs:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./infra/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
     restart: unless-stopped
     profiles: ["infra","all"]
 
@@ -67,6 +67,41 @@ services:
     restart: unless-stopped
     profiles: ["all"]
 
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    ports: ["9090:9090"]
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on: ["app"]
+    restart: unless-stopped
+    profiles: ["infra","all"]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+       # 로그인 없이 읽기 허용
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/datasources/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ./infra/grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on: ["prometheus"]
+    restart: unless-stopped
+    profiles: ["infra","all"]
+
 volumes:
   mysql_data:
   es_data:
+  prometheus_data:
+  grafana_data:

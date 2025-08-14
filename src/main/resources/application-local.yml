@@ -4,14 +4,6 @@ spring:
     url: jdbc:mysql://localhost:3306/bookdb?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: app
     password: app
-  jpa:
-    hibernate:
-      ddl-auto: update
-    defer-datasource-initialization: true
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
   data:
     redis:
       host: localhost
@@ -19,9 +11,7 @@ spring:
   elasticsearch:
     uris: http://localhost:9200
 
-server:
-  tomcat:
-    accesslog:
-      enabled: true
-      pattern: "%h %l %u %t \"%r\" %s %b %D ms %{X-Request-Id}i"
-      directory: logs
+management:
+  metrics:
+    tags:
+      env: local

@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  external_labels:
+    env: docker  # 대시보드/알림에서 구분용 기본 라벨
+
+scrape_configs:
+  # all 모드: 앱이 컨테이너(app)로 떠 있을 때 수집
+  - job_name: 'liberarium-api-docker'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - 'app:8080'  # docker compose app 서비스
+
+  # infra+local 모드: 앱을 로컬호스트에서 실행할 때 수집 -> job_name은 알아서 맵핑되어서 처리되나?
+  - job_name: 'liberarium-api-local'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - 'host.docker.internal:8080'  # 컨테이너 → localhost 접근
