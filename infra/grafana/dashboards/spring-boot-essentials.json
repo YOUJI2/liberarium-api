@@ -1,0 +1,115 @@
+{
+  "uid": "spring-essentials",
+  "title": "Spring Boot Essentials",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "editable": true,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP Requests /s",
+      "gridPos": { "h": 8, "w": 12, "x": 0,  "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "targets": [
+        { "expr": "sum(rate(http_server_requests_seconds_count[1m]))", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rate (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "(sum(rate(http_server_requests_seconds_count{outcome=~\"CLIENT_ERROR|SERVER_ERROR\"}[1m])) / sum(rate(http_server_requests_seconds_count[1m])))*100",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP P95 Latency (s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0,  "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket[5m])))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Heap Usage (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "targets": [
+        { "expr": "(sum(jvm_memory_used_bytes{area=\"heap\"}) / sum(jvm_memory_max_bytes{area=\"heap\"})) * 100", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Tomcat Busy Threads (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 0,  "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "targets": [
+        { "expr": "(sum(tomcat_threads_busy) / sum(tomcat_threads_current)) * 100", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Hikari Active / Max (connections)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "targets": [
+        { "expr": "sum(hikaricp_connections_active)", "refId": "A" },
+        { "expr": "sum(hikaricp_connections)", "refId": "B" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Process CPU (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 0,  "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "targets": [
+        { "expr": "avg(process_cpu_usage) * 100", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Threads Live",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "targets": [
+        { "expr": "sum(jvm_threads_live)", "refId": "A" }
+      ]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "application",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+        "query": "label_values(http_server_requests_seconds_count, application)",
+        "refresh": 1,
+        "hide": 2
+      },
+      {
+        "name": "env",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+        "query": "label_values(http_server_requests_seconds_count, env)",
+        "refresh": 1,
+        "hide": 2
+      }
+    ]
+  }
+}

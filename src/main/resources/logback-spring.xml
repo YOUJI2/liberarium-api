@@ -1,0 +1,55 @@
+<configuration>
+  <!-- 로컬 디버깅용 텍스트 패턴(원하면 주석처리 가능) -->
+  <property name="LOG_PATTERN"
+    value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{requestId}] [%X{clientIp}] %logger{36} - %msg%n"/>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder><pattern>${LOG_PATTERN}</pattern></encoder>
+  </appender>
+
+  <!-- 로컬 환경에서의 log 수집 -->
+  <springProfile name="local">
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <file>./logs/app.json</file>
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <fileNamePattern>./logs/app.%d{yyyy-MM-dd}.json</fileNamePattern>
+        <maxHistory>14</maxHistory>
+      </rollingPolicy>
+      <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+        <providers>
+          <timestamp/><loggerName/><threadName/><logLevel/><message/><mdc/><stackTrace/>
+        </providers>
+      </encoder>
+    </appender>
+
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+      <appender-ref ref="JSON_FILE"/>
+      <queueSize>8192</queueSize>
+      <discardingThreshold>0</discardingThreshold>
+    </appender>
+
+    <root level="INFO">
+      <appender-ref ref="ASYNC_FILE"/>
+    </root>
+  </springProfile>
+
+  <!-- 로컬 환경외(컨테이너를 통한 App 빌드)의 log 수집 -->
+  <springProfile name="!local">
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+        <providers>
+          <timestamp/><loggerName/><threadName/><logLevel/><message/><mdc/><stackTrace/>
+        </providers>
+      </encoder>
+    </appender>
+
+    <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
+      <appender-ref ref="JSON_CONSOLE"/>
+      <queueSize>8192</queueSize>
+      <discardingThreshold>0</discardingThreshold>
+    </appender>
+
+    <root level="INFO">
+      <appender-ref ref="ASYNC_JSON"/>
+    </root>
+  </springProfile>
+</configuration>
