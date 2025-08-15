@@ -7,7 +7,20 @@ services:
       MYSQL_USER: app
       MYSQL_PASSWORD: app
     ports: ["3306:3306"]
-    volumes: ["mysql_data:/var/lib/mysql"]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./infra/mysql/init:/docker-entrypoint-initdb.d:ro
+    command: [
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci"
+    ]
+    # DB 셋팅 될때까지 healthcheck 추가하기
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
     restart: unless-stopped
     profiles: ["infra","all"]
 
@@ -53,11 +66,20 @@ services:
   app:
     build: .
     ports: ["8080:8080"]
-    depends_on: ["mysql","redis","elasticsearch"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+    volumes:
+      - ./logs:/app-logs  # application.yml의 filebeat가 읽을 log경로 일치시키기
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bookdb
       SPRING_DATASOURCE_USERNAME: app
       SPRING_DATASOURCE_PASSWORD: app
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
       SPRING_REDIS_HOST: redis
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
     labels:
@@ -76,7 +98,7 @@ services:
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-    depends_on: ["app"]
+#    depends_on: ["app"]
     restart: unless-stopped
     profiles: ["infra","all"]
 

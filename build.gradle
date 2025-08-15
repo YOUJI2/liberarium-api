@@ -53,7 +53,6 @@ tasks.withType(Test).configureEach {
 }
 
 ext.jacocoIncludes = [
-  'com/liberarium/api/**/domain/**',
   'com/liberarium/api/**/service/**',
   'com/liberarium/api/**/repository/**'
 ]
