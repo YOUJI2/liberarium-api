@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS book_detail (
 
 -- 분류 카탈로그 (대략 6~8개 내외의 고정으로)
 CREATE TABLE IF NOT EXISTS catalog (
-  id          TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id          INT NOT NULL AUTO_INCREMENT,
   code        VARCHAR(100)  NOT NULL UNIQUE,  -- 영문 코드
   name        VARCHAR(100) NOT NULL,          -- 카탈로그 이름
   sort_order  TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 고정 노출 순서

@@ -10,9 +10,11 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./infra/mysql/init:/docker-entrypoint-initdb.d:ro
+      - ./infra/mysql/conf.d/charset.cnf:/etc/mysql/conf.d/charset.cnf:ro
     command: [
       "--character-set-server=utf8mb4",
-      "--collation-server=utf8mb4_unicode_ci"
+      "--collation-server=utf8mb4_unicode_ci",
+      "--character-set-client-handshake=FALSE"
     ]
     # DB 셋팅 될때까지 healthcheck 추가하기
     healthcheck:
