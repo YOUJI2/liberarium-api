@@ -4,17 +4,18 @@ spring:
 
   datasource:
     # docker-compose에서 app 실행시 컨테이너 주소를 바라봐야함
-    url: jdbc:mysql://mysql:3306/bookdb?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: jdbc:mysql://mysql:3306/bookdb?useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci
     username: app
     password: app
   jpa:
     hibernate:
-      ddl-auto: update
-    defer-datasource-initialization: true
+      ddl-auto: validate
     show-sql: true
+    open-in-view: false # 영속성 범위 제한
     properties:
       hibernate:
         format_sql: true
+        jdbc.time_zone: Asia/Seoul
   data:
     redis:
       host: redis
@@ -27,7 +28,7 @@ server:
     accesslog:
       enabled: true
       pattern: "%h %l %u %t \"%r\" %s %b %D ms %{X-Request-Id}i"
-      directory: logs
+      directory: /app-logs
   forward-headers-strategy: framework
 
 management:
