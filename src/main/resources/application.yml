@@ -16,6 +16,8 @@ spring:
       hibernate:
         format_sql: true
         jdbc.time_zone: Asia/Seoul
+  cache:
+    type: simple
   data:
     redis:
       host: redis
