@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: liberarium-api
+
+  datasource:
+    # docker-compose에서 app 실행시 컨테이너 주소를 바라봐야함
+    url: jdbc:mysql://mysql:3306/bookdb?useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci
+    username: app
+    password: app
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    open-in-view: false # 영속성 범위 제한
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc.time_zone: Asia/Seoul
+  cache:
+    type: simple
+  data:
+    redis:
+      host: redis
+      port: 6379
+  elasticsearch:
+    uris: http://elasticsearch:9200
+
+server:
+  tomcat:
+    accesslog:
+      enabled: true
+      pattern: "%h %l %u %t \"%r\" %s %b %D ms %{X-Request-Id}i"
+      directory: /app-logs
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    tags:
+      application: liberarium-api
+      env: docker

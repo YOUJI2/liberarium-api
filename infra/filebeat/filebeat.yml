@@ -1,0 +1,40 @@
+filebeat.inputs:
+  - type: filestream
+    id: liberarium-api-local
+    enabled: true
+    paths: ["/app-logs/app.json"]
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      templates:
+        - condition:
+            equals:
+              docker.container.labels.co.elastic.logs/enabled: "true"
+          config:
+            - type: container
+              format: docker
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              processors:
+                - decode_json_fields:
+                    fields: ["message"]
+                    target: ""
+                    overwrite_keys: true
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+setup.kibana.host: "http://kibana:5601"
+
+setup.template.name: "liberarium-logs"
+setup.template.pattern: "liberarium-logs-*"
+output.elasticsearch.index: "liberarium-logs-%{+yyyy.MM.dd}"
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~

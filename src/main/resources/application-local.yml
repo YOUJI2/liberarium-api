@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    # local 환경에서는 DB를 미리 띄운상태에서 localhost로 접속
+    url: jdbc:mysql://localhost:3306/bookdb?useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci
+    username: app
+    password: app
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  elasticsearch:
+    uris: http://localhost:9200
+
+server:
+  tomcat:
+    accesslog:
+      enabled: true
+      directory: logs/access
+
+management:
+  metrics:
+    tags:
+      env: local
