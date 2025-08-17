@@ -44,6 +44,7 @@ public class Book extends BaseEntity {
   @OneToOne(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
   private BookDetail detail;
 
+  @Builder.Default
   @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
   private Set<BookCatalog> catalogs = new HashSet<>();
 }
