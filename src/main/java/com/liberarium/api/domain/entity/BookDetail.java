@@ -4,9 +4,11 @@ import com.liberarium.api.common.model.BaseEntity;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Builder
 @Entity
 @Getter
 @Table(name = "book_detail")
