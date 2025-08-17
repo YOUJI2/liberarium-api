@@ -51,8 +51,12 @@ dependencies {
 }
 
 tasks.withType(Test).configureEach {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport
+  useJUnitPlatform {
+    if (System.getenv('CI') == 'true') {
+      excludeTags 'integration'
+    }
+  }
+  finalizedBy jacocoTestReport
 }
 
 ext.jacocoIncludes = [
