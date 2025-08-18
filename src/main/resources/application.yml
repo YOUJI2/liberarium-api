@@ -48,3 +48,10 @@ management:
     tags:
       application: liberarium-api
       env: docker
+
+app:
+  es:
+    books-index: books
+    await:
+      total-seconds: 180
+      poll-millis: 1000
