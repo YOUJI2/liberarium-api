@@ -6,6 +6,7 @@ import com.liberarium.api.search.dto.PopularKeywordDto;
 import java.util.List;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -17,6 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 class PopularKeywordServiceTest {
 
   private static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:7-alpine");

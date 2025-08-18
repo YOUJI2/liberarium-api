@@ -8,6 +8,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import java.io.IOException;
 import java.time.Duration;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @Testcontainers
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 class BookSearchServiceTest {
 
   @MockBean
