@@ -19,7 +19,7 @@ public class BookConverter {
       .sorted()
       .collect(Collectors.joining(", "));
 
-    BookDetail d = b.getDetail(); // 1:1 상세 (nullable)
+    BookDetail d = b.getDetail();
     return new BookDetailDto(
       b.getIsbn(),
       b.getTitle(),
@@ -29,8 +29,8 @@ public class BookConverter {
       b.getImageUrl(),
       b.getPublishedDate(),
       b.getPublisher(),
-      d != null && d.isSoldOut(),
-      d != null && d.isFreeShipping(),
+      d != null && d.getSoldOut(),
+      d != null && d.getFreeShipping(),
       d != null ? d.getListPrice() : 0,
       d != null ? d.getSalePrice() : 0,
       d != null ? d.getAuthorBio() : "",

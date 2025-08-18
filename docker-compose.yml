@@ -33,13 +33,21 @@ services:
     profiles: ["infra","all"]
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+    build:
+      context: .
+      dockerfile: ./docker/elasticsearch/Dockerfile.es
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - ES_JAVA_OPTS=-Xms768m -Xmx768m
     ports: ["9200:9200"]
     volumes: ["es_data:/usr/share/elasticsearch/data"]
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=30s > /dev/null || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     restart: unless-stopped
     profiles: ["infra","all"]
 
@@ -74,7 +82,7 @@ services:
       redis:
         condition: service_started
       elasticsearch:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./logs:/app-logs  # application.yml의 filebeat가 읽을 log경로 일치시키기
     environment:
