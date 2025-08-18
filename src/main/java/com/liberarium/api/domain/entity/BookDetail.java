@@ -28,16 +28,16 @@ public class BookDetail extends BaseEntity {
   private Book book;
 
   @Column(name = "sold_out", nullable = false)
-  private boolean soldOut;  // 도서 재고 품절 여부만 확인 (재고 수량은 따로 관리 필요)
+  private Boolean soldOut;  // 도서 재고 품절 여부만 확인 (재고 수량은 따로 관리 필요)
 
   @Column(name = "free_shipping", nullable = false)
-  private boolean freeShipping;
+  private Boolean freeShipping;
 
   @Column(name = "list_price")
-  private int listPrice;
+  private Integer listPrice;
 
   @Column(name = "sale_price")
-  private int salePrice;
+  private Integer salePrice;
 
   @Lob
   @Column(name = "author_bio")
