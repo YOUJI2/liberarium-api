@@ -173,7 +173,9 @@ docker compose --profile app up -d
 
 </br>
 
-**테스트 실행 (환경변수 설정 필수, M3기준 Colima로 docker 실행)**
+**테스트 실행 (환경변수 설정 필수, M3기준 Colima로 docker 실행, )**
+> `docker compose --profile app up`으로 먼저 모든 application 실행 후 가능
+
 ```bash
   DOCKER_HOST=unix:///Users/{사용자폴더}/.colima/default/docker.sock \
   TESTCONTAINERS_CHECKS_DISABLE=true \
