@@ -1,11 +1,10 @@
 ## 📚 Liberarium API (도서 검색 서비스)
 
 Liberarium API는 **도서 검색 및 상세 조회 서비스**를 제공하는 백엔드 애플리케이션입니다.  
-Elasticsearch 기반의 전문 검색 기능을 활용하여 빠르고 정확한 검색 품질을 보장하며, Redis를 활용한 캐싱과 분산락(Distributed Lock)을 통해 대규모 트래픽 환경에서도 안정적인 성능과 데이터 정합성을 제공합니다.  
-또한, **인기 검색어 집계**, **도서 상세 정보 조회**, **ES 인덱스 자동화** 등 운영 환경에서 필수적인 기능들을 포함하고 있으며, 로그 수집(Filebeat → Elasticsearch → Kibana) 기반으로 시스템 운영/모니터링도 지원합니다.  
-본 프로젝트는 **검색 품질 개선, 캐싱 전략, 동시성 제어**를 중점적으로 다루고 있습니다.
-
-</br>
+Elasticsearch 기반의 전문 검색 기능을 활용하여 빠르고 정확한 검색 품질을 보장하며, 
+Redis를 활용한 캐싱과 분산락(Distributed Lock)을 통해 멀티 인스턴스 환경에서도 안정적인 동시성 제어를 보장합니다.
+또한, **인기 검색어 집계**, **도서 상세 정보 조회**, **ES 인덱스 자동화** 등 운영 환경에서 필수적인 기능들을 포함하고 있으며,
+ 로그 수집(Filebeat → Elasticsearch → Kibana) 기반으로 시스템 운영/모니터링도 추가하였습니다.
 
 ### 📎 기술 스택
 - JDK 17
@@ -17,8 +16,6 @@ Elasticsearch 기반의 전문 검색 기능을 활용하여 빠르고 정확한
 - Gradle
 - Docker Compose
 - Swagger (Springdoc OpenAPI)
-
-</br>
 
 ### 📌 구현 범위
 
@@ -32,8 +29,6 @@ Elasticsearch 기반의 전문 검색 기능을 활용하여 빠르고 정확한
 - Seed 데이터 자동 로딩
 - 도서 상세 조회시 캐싱 적용
 - 캐시 스탬피드시 분산락 기반 동시성 제어 적용
-
-</br>
 
 ### 🗂️ 패키지 구조
 
@@ -86,7 +81,7 @@ com.liberarium.api
 - **main** : 메인 브랜치  
 - **develop** : 개발 통합 브랜치  
 - **feature/LB-{이슈번호}** : 기능 개발 브랜치  
-<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/c4f2063d-5b30-4c08-8d9f-22319c735d73" />
+<img width="400" height="300" alt="image" src="https://github.com/user-attachments/assets/c4f2063d-5b30-4c08-8d9f-22319c735d73" />
 
 ### 📌 commit (TYPE)
 - **FEAT**: 새로운 기능 추가
@@ -103,7 +98,6 @@ com.liberarium.api
 <img width="1751" height="593" alt="image" src="https://github.com/user-attachments/assets/60bdb3b8-8328-4603-b027-6f807a0b3665" />
  
 
-
  **2. 테이블 구조**
 - [book]과 [catalog]를 기준으로, [book]은 [book_detail]과 1:1 관계를 가지고 다수의 [catalog]를 가질 수 있도록 구성
     ```
@@ -111,6 +105,9 @@ com.liberarium.api
       1 |
     [book_detail]
     ```
+  - 검색에 활용되는 도서의 경우 상세정보를 제외한 기본적인 데이터를 기반으로 하기 때문에 book과 book_detail로 구분하여 필요한 부분만 로드될 수 있도록 나눴습니다.
+  - 카탈로그는 책 마다 가지고 있는 시스템적 구분으로 '어느 분야'의 도서인지를 구분하기 위해 구성하였습니다. 도서마다 여러개의 카탈로그를 가질 수 있습니다.
+    - 추 후 카탈로그로 구분하여 도서를 검색할 수 있는 필터링 기능을 생각하며 위 구조를 생각했습니다.
 - 애플리케이션 시작시 01_schema.sql, 02_seed.sql 호출
 - sql 스크립트로 테이블, 인덱스 형성 및 초기 데이터 로드
 
@@ -187,14 +184,23 @@ docker compose --profile app up -d
 
 ### 🧐 고민했던 부분
 
-1. **Elasticsearch 연결 안정성**
+1. **분산락 AOP**
+   - **문제**: 캐시 미스가 동시에 발생하면 다수의 요청이 동시에 DB로 떨어져 부하 발생 (Cache Stampede 문제)
+   - **대안**
+     1. 애플리케이션 단일 인스턴스 환경에서는 `synchronized`로 처리가 가능
+     2.  하지만, 멀티 인스턴스 환경을 고려하여 분산락을 추가적으로 개발 
+   - **결정**: `Redisson` 기반 `RLock`을 AOP로 추상화하여 `@DistributedLock` 어노테이션만 붙이면 쉽게 적용 가능  
+   - **효과**: 다중 서버 환경에서도 데이터 정합성과 캐시 일관성 보장
+
+
+2. **Elasticsearch 연결 안정성**
    - **문제**: Docker / Testcontainers 환경에서 ES가 기동되기 전에 Spring Boot가 먼저 뜨면서 `Connection refused` 오류 발생
    - **고민**
      - (1) 애플리케이션에서 단순 retry 로직 구현
      - (2) 기동 스크립트(docker-compose depends_on)로 제어 클러스터 상채 점검
    - **결정**: `EsAwaiterUtil`을 구현하여 클러스터 상태가 `yellow/green` 이 될 때까지 최대 60초간 대기 → 애플리케이션이 안정적으로 실행되도록 보장
 
-2. **검색 품질**
+3. **검색 품질**
    - **문제**: 단순 Full-text 검색 시 불필요한 매칭 결과 과다 발생 (예: 설명, 출판사명 등 불필요한 필드에서 히트)
    - **대안**
      - (1) 모든 필드 검색 (정확도 ↓, recall ↑)
@@ -202,21 +208,13 @@ docker compose --profile app up -d
    - **결정**: `title`, `author` 필드만 검색 대상으로 제한 → 실제 사용자가 기대하는 검색 품질 확보  
    - **추가**: 정렬 정책을 `최근 등록 → 출판일` 순으로 설정하여 최근 등록한 도서를 우선적으로 검색
 
-3. **Redis ZSET 인기 검색어**
+4. **Redis ZSET 인기 검색어**
    - **문제**: 인기 검색어 집계를 RDB에서 처리하면 `COUNT + GROUP BY` 성능 저하
    - **대안**
      1. RDB 통계 테이블 구축하여 저장
      2.  Redis Sorted Set(ZSET)으로 실시간 집계
    - **결정**: Redis ZSET을 활용 → 검색어 입력 시 score 점수를 증가 시킨다
    - **효과**: O(logN) 성능으로 실시간 순위 집계 가능, API 호출 시 Top N 조회 성능 개선
-
-4. **분산락 AOP**
-   - **문제**: 캐시 미스가 동시에 발생하면 다수의 요청이 동시에 DB로 떨어져 부하 발생 (Cache Stampede 문제)
-   - **대안**
-     1. 애플리케이션 단일 인스턴스 환경에서는 `synchronized`로 처리가 가능
-     2.  하지만, 멀티 인스턴스 환경을 고려하여 분산락을 추가적으로 개발 
-   - **결정**: `Redisson` 기반 `RLock`을 AOP로 추상화하여 `@DistributedLock` 어노테이션만 붙이면 쉽게 적용 가능  
-   - **효과**: 다중 서버 환경에서도 데이터 정합성과 캐시 일관성 보장
 
 5. **예외 처리**
    - **문제**: 각 서비스마다 예외 처리 로직이 달라지면 클라이언트 응답 포맷 불일치 및 유지보수 어려움
